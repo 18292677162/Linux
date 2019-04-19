@@ -1,4 +1,4 @@
-all:create exit join detach ticket mutex cond
+all:create exit join detach ticket mutex cond sem sem_mutex
 create:create.c
 	gcc $^ -o $@ -lpthread
 exit:exit.c
@@ -12,4 +12,8 @@ mutex:mutex.c
 ticket:ticket.c
 	gcc $^ -o $@ -lpthread
 cond:cond.c
+	gcc $^ -o $@ -lpthread
+sem:sem.c
+	gcc $^ -o $@ -lpthread
+sem_mutex:sem_mutex.c
 	gcc $^ -o $@ -lpthread

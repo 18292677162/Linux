@@ -26,17 +26,23 @@
 //      pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 pthread_cond_t cond;
 pthread_mutex_t mutex;
+int goods = 0;
 
 void *producer(void *arg)
 {
     while(1){
-        sleep(1);
-        printf("product a goods!!!\n");
-        //int pthread_cond_broadcast(pthread_cond_t *cond);
-        //  唤醒所有等待在条件变量上的线程
-        //int pthread_cond_signal(pthread_cond_t *cond);
-        //  唤醒第一个等待在条件变量上的线程
-        pthread_cond_signal(&cond);
+        pthread_mutex_lock(&mutex);
+        if(0 == goods){
+            sleep(1);
+            printf("product a goods!!!\n");
+            goods = 1;
+            //int pthread_cond_broadcast(pthread_cond_t *cond);
+            //  唤醒所有等待在条件变量上的线程
+            //int pthread_cond_signal(pthread_cond_t *cond);
+            //  唤醒第一个等待在条件变量上的线程
+            pthread_cond_signal(&cond);
+        }
+        pthread_mutex_unlock(&mutex);
     }
     return NULL;
 }
@@ -44,12 +50,23 @@ void *producer(void *arg)
 void *consumer(void *arg)
 {
     while(1){
-        //没有资源阻塞等待
-        //int pthread_cond_wait(pthread_cond_t *cond,
-        //              pthread_mutex_t *mutex);
-        //  条件变量和互斥锁搭配使用
-        pthread_cond_wait(&cond, &mutex);
+        pthread_mutex_lock(&mutex);
+        if(0 == goods){
+            //没有资源阻塞等待
+            //int pthread_cond_wait(pthread_cond_t *cond,
+            //              pthread_mutex_t *mutex);
+            //  条件变量和互斥锁搭配使用
+            //  先判断互斥锁是否加锁，如果加锁就解锁陷入等待（原子操作）
+            //  为了防止：没有货物，消费者先于生产者拿到锁，生产者拿
+            //  不到锁无法生产，会死锁
+            //  如果消费者先拿到锁，等待之前要解锁，解锁的目的是为了保证
+            //  全局条件的操作是受保护的
+            pthread_cond_wait(&cond, &mutex);
+        }
+        sleep(1);
         printf("consume a goods!!!\n");
+        goods = 0;
+        pthread_mutex_unlock(&mutex);
     }
     return NULL;
 }
