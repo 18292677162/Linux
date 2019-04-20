@@ -1,4 +1,4 @@
-all:create exit join detach ticket mutex cond sem sem_mutex
+all:create exit join detach ticket mutex cond sem sem_mutex rwlock
 create:create.c
 	gcc $^ -o $@ -lpthread
 exit:exit.c
@@ -16,4 +16,6 @@ cond:cond.c
 sem:sem.c
 	gcc $^ -o $@ -lpthread
 sem_mutex:sem_mutex.c
+	gcc $^ -o $@ -lpthread
+rwlock:rwlock.c
 	gcc $^ -o $@ -lpthread
