@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <pthread.h>
 
+//写优先
 /*
 int pthread_rwlock_init(pthread_rwlock_t *restrict rwlock,
             const pthread_rwlockattr_t *restrict attr);
@@ -42,7 +43,23 @@ int main()
 {
     int i; 
     pthread_t tid[8];
-    pthread_rwlock_init(&rwlock, NULL);
+
+    pthread_rwlockattr_t attr;
+    pthread_rwlockattr_init(&attr);
+    //int pthread_rwlockattr_setkind_np(pthread_rwlockattr_t *attr
+    //                          , int pref)
+    //      attr:   读写锁属性
+    //      pref:   优先级属性
+    //      PTHREAD_RWLOCK_PREFER_READER_NP（默认设置）读者优先
+    //      PTHREAD_RWLOCK_PREFER_WRITER_NP 
+    //      PTHREAD_RWLOCK_PREFER_WRITER_NONRECURSIVE_NP    写优先
+    //      默认读优先
+    pthread_rwlockattr_setkind_np(&attr
+                , PTHREAD_RWLOCK_PREFER_WRITER_NONRECURSIVE_NP);
+    pthread_rwlock_init(&rwlock, &attr);
+    //      销毁属性
+    //      int pthread_rwlockattr_destroy(pthread_rwlockattr_t *attr);
+    pthread_rwlockattr_destroy(&attr);
     for(i = 0; i < 3; i++){
         pthread_create(&tid[i], NULL, writer, (void *)i);
     }
